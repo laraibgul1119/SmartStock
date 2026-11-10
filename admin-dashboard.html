@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartStock - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #303f96;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #000000;
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: #252f75;
+            border-color: #252f75;
+            color: #ffffff;
+        }
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            min-height: 100vh;
+            background-color: #303f96;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 20px;
+        }
+        .sidebar .brand {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            display: block;
+            text-decoration: none;
+        }
+        .sidebar .role-label {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 20px 20px 8px;
+        }
+        .sidebar a.nav-item-link {
+            display: block;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 11px 20px;
+            font-weight: 500;
+            border-left: 4px solid transparent;
+        }
+        .sidebar a.nav-item-link:hover {
+            background-color: #252f75;
+            color: #ffffff;
+        }
+        .sidebar a.nav-item-link.active {
+            background-color: #ffffff;
+            color: var(--primary);
+            border-left-color: #000000;
+            font-weight: 600;
+        }
+        .sidebar .logout-link {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            padding-top: 15px;
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: 250px;
+            padding: 0 0 40px;
+        }
+        .topbar {
+            background-color: #ffffff;
+            border-bottom: 1px solid #dddddd;
+            padding: 15px 30px;
+        }
+        .topbar h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+        }
+        .user-chip {
+            background-color: var(--primary);
+            color: #ffffff;
+            font-weight: 600;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .content-pad {
+            padding: 30px;
+        }
+
+        /* Cards */
+        .stat-card {
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            border-left: 4px solid var(--primary);
+            height: 100%;
+        }
+        .stat-card .stat-label {
+            color: #555555;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .stat-card .stat-value {
+            color: #000000;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-sub {
+            color: #777777;
+            font-size: 0.8rem;
+        }
+        .panel-card {
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            height: 100%;
+        }
+        .panel-card .panel-head {
+            padding: 15px 20px;
+            border-bottom: 2px solid var(--primary);
+        }
+        .panel-card .panel-head h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+        }
+        .panel-card .panel-body {
+            padding: 20px;
+        }
+
+        /* Tables */
+        .table thead th {
+            background-color: #303f96;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-color: #303f96;
+        }
+        .table tbody td {
+            vertical-align: middle;
+            color: #000000;
+        }
+
+        /* Badges */
+        .badge-in {
+            background-color: #1b5e20;
+            color: #ffffff;
+        }
+        .badge-low {
+            background-color: #e65100;
+            color: #ffffff;
+        }
+        .badge-out {
+            background-color: #b71c1c;
+            color: #ffffff;
+        }
+
+        /* Simple bar chart */
+        .chart-bar {
+            background-color: var(--primary);
+            width: 100%;
+        }
+        .chart-track {
+            background-color: #e8e8e8;
+            height: 150px;
+            display: flex;
+            align-items: flex-end;
+        }
+        .chart-labels span {
+            font-size: 0.75rem;
+            color: #555555;
+        }
+
+        .section-heading {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a href="index.html" class="brand">SmartStock</a>
+        <div class="role-label">Admin / Shop Owner</div>
+        <nav class="mt-2">
+            <a href="admin-dashboard.html" class="nav-item-link active">Dashboard</a>
+            <a href="#" class="nav-item-link">Products</a>
+            <a href="#" class="nav-item-link">Categories</a>
+            <a href="#" class="nav-item-link">Suppliers</a>
+            <a href="#" class="nav-item-link">Customers</a>
+            <a href="#" class="nav-item-link">Purchases</a>
+            <a href="#" class="nav-item-link">Sales</a>
+            <a href="#" class="nav-item-link">Inventory</a>
+            <a href="#" class="nav-item-link">Users</a>
+            <a href="#" class="nav-item-link">Reports</a>
+        </nav>
+        <div class="logout-link">
+            <a href="login.html" class="nav-item-link">Logout</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Topbar -->
+        <div class="topbar d-flex justify-content-between align-items-center">
+            <div>
+                <h1>Admin Dashboard</h1>
+                <span class="small text-muted">Welcome back, Admin</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="small fw-semibold text-dark">Admin</span>
+                <div class="user-chip">A</div>
+            </div>
+        </div>
+
+        <div class="content-pad">
+
+            <!-- Stats -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="stat-label">Total Products</div>
+                            <div class="stat-value">248</div>
+                            <div class="stat-sub">Across 12 categories</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="stat-label">Today's Sales</div>
+                            <div class="stat-value">Rs. 18,450</div>
+                            <div class="stat-sub">42 transactions</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="stat-label">Monthly Purchase</div>
+                            <div class="stat-value">Rs. 126,300</div>
+                            <div class="stat-sub">18 purchase orders</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="stat-label">Low Stock Items</div>
+                            <div class="stat-value">9</div>
+                            <div class="stat-sub">3 out of stock</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart + Low Stock -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-7">
+                    <div class="card panel-card">
+                        <div class="panel-head d-flex justify-content-between align-items-center">
+                            <h2>Weekly Sales Overview</h2>
+                            <span class="small text-muted">This week</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="d-flex gap-3">
+                                <div class="d-flex flex-column justify-content-between text-end small text-muted" style="height:150px;">
+                                    <span>8k</span>
+                                    <span>6k</span>
+                                    <span>4k</span>
+                                    <span>2k</span>
+                                    <span>0</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex gap-2 chart-labels" style="height:150px;">
+                                        <div class="chart-track flex-grow-1 p-1"><div class="chart-bar" style="height:55%;"></div></div>
+                                        <div class="chart-track flex-grow-1 p-1"><div class="chart-bar" style="height:70%;"></div></div>
+                                        <div class="chart-track flex-grow-1 p-1"><div class="chart-bar" style="height:45%;"></div></div>
+                                        <div class="chart-track flex-grow-1 p-1"><div class="chart-bar" style="height:85%;"></div></div>
+                                        <div class="chart-track flex-grow-1 p-1"><div class="chart-bar" style="height:60%;"></div></div>
+                                        <div class="chart-track flex-grow-1 p-1"><div class="chart-bar" style="height:95%;"></div></div>
+                                        <div class="chart-track flex-grow-1 p-1"><div class="chart-bar" style="height:75%;"></div></div>
+                                    </div>
+                                    <div class="d-flex gap-2 mt-2 chart-labels text-center">
+                                        <span class="flex-grow-1">Mon</span>
+                                        <span class="flex-grow-1">Tue</span>
+                                        <span class="flex-grow-1">Wed</span>
+                                        <span class="flex-grow-1">Thu</span>
+                                        <span class="flex-grow-1">Fri</span>
+                                        <span class="flex-grow-1">Sat</span>
+                                        <span class="flex-grow-1">Sun</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="card panel-card">
+                        <div class="panel-head d-flex justify-content-between align-items-center">
+                            <h2>Low Stock Alerts</h2>
+                            <a href="#" class="small link-primary" style="color:#303f96; text-decoration:none;">View All</a>
+                        </div>
+                        <div class="panel-body p-0">
+                            <table class="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Sunflower Oil 1L</td>
+                                        <td class="text-center">3</td>
+                                        <td class="text-center"><span class="badge badge-low">Low</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sugar 1kg</td>
+                                        <td class="text-center">0</td>
+                                        <td class="text-center"><span class="badge badge-out">Out</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tea Pack 250g</td>
+                                        <td class="text-center">5</td>
+                                        <td class="text-center"><span class="badge badge-low">Low</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Dish Wash 500ml</td>
+                                        <td class="text-center">0</td>
+                                        <td class="text-center"><span class="badge badge-out">Out</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Shampoo 180ml</td>
+                                        <td class="text-center">2</td>
+                                        <td class="text-center"><span class="badge badge-low">Low</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Sales + Recent Purchases -->
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="card panel-card">
+                        <div class="panel-head d-flex justify-content-between align-items-center">
+                            <h2>Recent Sales</h2>
+                            <a href="#" class="small" style="color:#303f96; text-decoration:none;">View All Sales</a>
+                        </div>
+                        <div class="panel-body p-0">
+                            <div class="table-responsive">
+                                <table class="table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Invoice</th>
+                                            <th>Customer</th>
+                                            <th>Cashier</th>
+                                            <th class="text-end">Amount</th>
+                                            <th class="text-center">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>#INV-1042</td>
+                                            <td>Walk-in</td>
+                                            <td>Ali Raza</td>
+                                            <td class="text-end">Rs. 2,350</td>
+                                            <td class="text-center">11 Nov 2026</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#INV-1041</td>
+                                            <td>Fatima Khan</td>
+                                            <td>Ali Raza</td>
+                                            <td class="text-end">Rs. 1,120</td>
+                                            <td class="text-center">11 Nov 2026</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#INV-1040</td>
+                                            <td>Walk-in</td>
+                                            <td>Sara Ahmed</td>
+                                            <td class="text-end">Rs. 4,780</td>
+                                            <td class="text-center">10 Nov 2026</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#INV-1039</td>
+                                            <td>Usman Tariq</td>
+                                            <td>Sara Ahmed</td>
+                                            <td class="text-end">Rs. 890</td>
+                                            <td class="text-center">10 Nov 2026</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#INV-1038</td>
+                                            <td>Walk-in</td>
+                                            <td>Ali Raza</td>
+                                            <td class="text-end">Rs. 3,240</td>
+                                            <td class="text-center">10 Nov 2026</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="card panel-card">
+                        <div class="panel-head d-flex justify-content-between align-items-center">
+                            <h2>Recent Purchases</h2>
+                            <a href="#" class="small" style="color:#303f96; text-decoration:none;">View All</a>
+                        </div>
+                        <div class="panel-body p-0">
+                            <div class="table-responsive">
+                                <table class="table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>PO</th>
+                                            <th>Supplier</th>
+                                            <th class="text-end">Amount</th>
+                                            <th class="text-center">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>#PO-214</td>
+                                            <td>Metro Distributors</td>
+                                            <td class="text-end">Rs. 24,500</td>
+                                            <td class="text-center">11 Nov 2026</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#PO-213</td>
+                                            <td>Global Traders</td>
+                                            <td class="text-end">Rs. 12,800</td>
+                                            <td class="text-center">09 Nov 2026</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#PO-212</td>
+                                            <td>Fresh Foods Co.</td>
+                                            <td class="text-end">Rs. 31,200</td>
+                                            <td class="text-center">07 Nov 2026</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#PO-211</td>
+                                            <td>Metro Distributors</td>
+                                            <td class="text-end">Rs. 9,650</td>
+                                            <td class="text-center">05 Nov 2026</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
