@@ -1,0 +1,305 @@
+@model SmartStock.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Owner dashboard";
+    Layout = "_DashboardLayout";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <p class="eyebrow mb-1">Shop owner</p>
+        <h1 class="page-title">Overview</h1>
+    </div>
+    <div class="page-date">@DateTime.Now.ToString("dddd, d MMMM yyyy")</div>
+</div>
+
+<!-- KPI cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <span class="kpi-label">Revenue today</span>
+            <span class="kpi-value">@Model.RevenueToday.ToString("N0")</span>
+            <span class="kpi-sub">@Model.SalesToday sale(s) recorded</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <span class="kpi-label">Revenue this month</span>
+            <span class="kpi-value">@Model.RevenueThisMonth.ToString("N0")</span>
+            <span class="kpi-sub">@Model.SalesThisMonth sale(s) so far</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <span class="kpi-label">Stock at cost</span>
+            <span class="kpi-value">@Model.StockValue.ToString("N0")</span>
+            <span class="kpi-sub">@Model.TotalUnitsInStock.ToString("N0") units · @Model.TotalProducts products</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-card-alert @(Model.LowStockCount + Model.OutOfStockCount > 0 ? "has-alerts" : "")">
+            <span class="kpi-label">Needs attention</span>
+            <span class="kpi-value">@(Model.LowStockCount + Model.OutOfStockCount)</span>
+            <span class="kpi-sub">@Model.LowStockCount low · @Model.OutOfStockCount out of stock</span>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="panel">
+            <div class="panel-head">
+                <h2 class="panel-title">Revenue — last 14 days</h2>
+                <span class="panel-note">per day</span>
+            </div>
+            <div class="panel-body">
+                <canvas id="revenueChart" height="220" aria-label="Revenue for the last 14 days" role="img"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel">
+            <div class="panel-head">
+                <h2 class="panel-title">Stock by category</h2>
+                <span class="panel-note">units</span>
+            </div>
+            <div class="panel-body">
+                <canvas id="categoryChart" height="220" aria-label="Stock units by category" role="img"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Stock alerts -->
+    <div class="col-lg-6" id="stock-alerts">
+        <div class="panel">
+            <div class="panel-head">
+                <h2 class="panel-title">Stock alerts</h2>
+                <span class="panel-note">at or below reorder level</span>
+            </div>
+            @if (!Model.StockAlerts.Any())
+            {
+                <div class="panel-body empty-state">
+                    <p class="mb-0">Every product is above its reorder level. Nothing to restock today.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-scroll">
+                    <table class="ledger-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th class="text-end">Stock</th>
+                                <th class="text-end">Reorder at</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.StockAlerts)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="cell-strong">@item.Name</span>
+                                        <span class="cell-sub">@item.Sku</span>
+                                    </td>
+                                    <td>@item.CategoryName</td>
+                                    <td class="text-end num">@item.StockQuantity</td>
+                                    <td class="text-end num">@item.ReorderLevel</td>
+                                    <td>
+                                        @if (item.IsOutOfStock)
+                                        {
+                                            <span class="badge-stamp badge-out">Out</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-stamp badge-low">Low</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Recent sales -->
+    <div class="col-lg-6" id="recent-sales">
+        <div class="panel">
+            <div class="panel-head">
+                <h2 class="panel-title">Recent sales</h2>
+                <span class="panel-note">latest 8</span>
+            </div>
+            @if (!Model.RecentSales.Any())
+            {
+                <div class="panel-body empty-state">
+                    <p class="mb-0">No sales recorded yet. Once the cashier rings one up, it will appear here.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-scroll">
+                    <table class="ledger-table">
+                        <thead>
+                            <tr>
+                                <th>Invoice</th>
+                                <th>When</th>
+                                <th>By</th>
+                                <th class="text-end">Items</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sale in Model.RecentSales)
+                            {
+                                <tr>
+                                    <td><span class="cell-strong num">@sale.InvoiceNumber</span></td>
+                                    <td>@sale.SoldAt.ToString("d MMM, HH:mm")</td>
+                                    <td>@(sale.CashierName ?? "—")</td>
+                                    <td class="text-end num">@sale.ItemCount</td>
+                                    <td class="text-end num">@sale.TotalAmount.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Top products -->
+    <div class="col-12" id="top-products">
+        <div class="panel">
+            <div class="panel-head">
+                <h2 class="panel-title">Top products by revenue</h2>
+                <span class="panel-note">all time</span>
+            </div>
+            @if (!Model.TopProducts.Any())
+            {
+                <div class="panel-body empty-state">
+                    <p class="mb-0">No sales yet — top products will be ranked once transactions are recorded.</p>
+                </div>
+            }
+            else
+            {
+                <div class="panel-body">
+                    <div class="row g-3">
+                        @foreach (var product in Model.TopProducts)
+                        {
+                            var share = Model.TopProducts.First().Revenue > 0
+                                ? (double)(product.Revenue / Model.TopProducts.First().Revenue) * 100
+                                : 0;
+                            <div class="col-md-6 col-xl">
+                                <div class="rank-card">
+                                    <div class="d-flex justify-content-between align-items-baseline gap-2">
+                                        <span class="rank-name">@product.Name</span>
+                                        <span class="rank-revenue num">@product.Revenue.ToString("N0")</span>
+                                    </div>
+                                    <div class="rank-bar" aria-hidden="true">
+                                        <span class="rank-fill" style="width: @share.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></span>
+                                    </div>
+                                    <span class="rank-sub">@product.UnitsSold unit(s) sold</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/chart.js/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            const revenuePoints = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                Model.RevenueLast14Days.Select(p => new {
+                    label = p.Date.ToString("dd MMM"),
+                    revenue = p.Revenue,
+                    count = p.Count
+                })));
+            const categoryPoints = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                Model.StockByCategory.Select(c => new { name = c.Name, units = c.Units })));
+
+            const ink = "#1c1917";
+            const green = "#1f6b4f";
+            const amber = "#c98a1d";
+            const rule = "#e7e0d1";
+
+            Chart.defaults.font.family = "'Inter', 'Segoe UI', system-ui, sans-serif";
+            Chart.defaults.color = "#6b6355";
+
+            new Chart(document.getElementById("revenueChart"), {
+                type: "bar",
+                data: {
+                    labels: revenuePoints.map(p => p.label),
+                    datasets: [{
+                        label: "Revenue",
+                        data: revenuePoints.map(p => p.revenue),
+                        backgroundColor: green,
+                        borderColor: green,
+                        borderWidth: 0,
+                        borderRadius: 3,
+                        barPercentage: 0.65
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => " Revenue: " + Number(ctx.parsed.y).toLocaleString(),
+                                afterLabel: ctx => " Sales: " + revenuePoints[ctx.dataIndex].count
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkipPadding: 8 } },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: rule },
+                            ticks: { callback: v => Number(v).toLocaleString() }
+                        }
+                    }
+                }
+            });
+
+            if (categoryPoints.length > 0) {
+                new Chart(document.getElementById("categoryChart"), {
+                    type: "doughnut",
+                    data: {
+                        labels: categoryPoints.map(c => c.name),
+                        datasets: [{
+                            data: categoryPoints.map(c => c.units),
+                            backgroundColor: [green, amber, "#8c6239", "#4f7f9e", "#a34f4f", "#7a8f5a", "#9a8fb5"],
+                            borderColor: "#faf6ec",
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        cutout: "58%",
+                        plugins: {
+                            legend: { position: "bottom", labels: { boxWidth: 10, padding: 10, font: { size: 11 } } },
+                            tooltip: {
+                                callbacks: { label: ctx => " " + ctx.label + ": " + ctx.parsed.toLocaleString() + " units" }
+                            }
+                        }
+                    }
+                });
+            } else {
+                document.getElementById("categoryChart").replaceWith(
+                    Object.assign(document.createElement("p"), {
+                        className: "empty-state mb-0",
+                        textContent: "No products on file yet."
+                    }));
+            }
+        })();
+    </script>
+}

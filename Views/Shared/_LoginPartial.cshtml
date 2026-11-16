@@ -1,0 +1,39 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using SmartStock.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav ms-auto align-items-lg-center">
+@if (SignInManager.IsSignedIn(User))
+{
+    var currentUser = await UserManager.GetUserAsync(User);
+    var displayName = string.IsNullOrWhiteSpace(currentUser?.FullName)
+        ? (currentUser?.UserName ?? "Account")
+        : currentUser.FullName;
+    var isAdmin = currentUser != null && await UserManager.IsInRoleAsync(currentUser, RoleNames.Admin);
+
+    <li class="nav-item">
+        <a class="nav-link text-dark fw-semibold" asp-controller="Account" asp-action="DashboardRedirect">
+            <span class="role-dot @(isAdmin ? "role-dot-admin" : "role-dot-cashier")" aria-hidden="true"></span>
+            Dashboard
+        </a>
+    </li>
+    <li class="nav-item d-none d-sm-block">
+        <span class="nav-link text-dark disabled px-0">Hello, @displayName</span>
+    </li>
+    <li class="nav-item">
+        <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="nav-link btn btn-link text-dark">Log out</button>
+        </form>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Log in</a>
+    </li>
+    <li class="nav-item ms-lg-2">
+        <a class="btn btn-ink btn-sm px-3" asp-controller="Account" asp-action="Register">Create account</a>
+    </li>
+}
+</ul>

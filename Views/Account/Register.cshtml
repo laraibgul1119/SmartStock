@@ -1,0 +1,89 @@
+@model SmartStock.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Create account";
+}
+
+<div class="auth-wrap">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6 col-xl-5">
+                <div class="auth-card">
+                    <div class="auth-head">
+                        <span class="brand-mark" aria-hidden="true">S</span>
+                        <p class="eyebrow mb-1">New account</p>
+                        <h1 class="auth-title">Create your SmartStock account</h1>
+                    </div>
+
+                    <form asp-controller="Account" asp-action="Register" method="post" class="px-4 px-sm-5 pb-4">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label"></label>
+                            <input asp-for="FullName" class="form-control form-control-lg" autocomplete="name"
+                                   placeholder="Your full name" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control form-control-lg" autocomplete="username"
+                                   placeholder="you@yourshop.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label asp-for="Password" class="form-label"></label>
+                                <input asp-for="Password" class="form-control form-control-lg" autocomplete="new-password"
+                                       placeholder="At least 6 characters" />
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label asp-for="ConfirmPassword" class="form-label"></label>
+                                <input asp-for="ConfirmPassword" class="form-control form-control-lg" autocomplete="new-password"
+                                       placeholder="Repeat password" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <fieldset class="mb-4">
+                            <legend class="form-label">Account type</legend>
+                            <div class="row g-2">
+                                <div class="col-sm-6">
+                                    <label class="role-option">
+                                        <input type="radio" asp-for="Role" value="Admin" />
+                                        <span class="role-option-body">
+                                            <strong>Shop owner</strong>
+                                            <small>Manage products, suppliers, stock and reports</small>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="role-option">
+                                        <input type="radio" asp-for="Role" value="Cashier" />
+                                        <span class="role-option-body">
+                                            <strong>Cashier</strong>
+                                            <small>Record sales and check product stock</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Role" class="text-danger small"></span>
+                        </fieldset>
+
+                        <button type="submit" class="btn btn-ink w-100 py-2">Create account</button>
+
+                        <p class="text-center small mt-4 mb-0">
+                            Already registered?
+                            <a asp-controller="Account" asp-action="Login">Log in</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

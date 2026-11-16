@@ -1,0 +1,176 @@
+@model SmartStock.ViewModels.CashierDashboardViewModel
+@using Microsoft.AspNetCore.Identity
+@using SmartStock.Models
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Cashier dashboard";
+    Layout = "_DashboardLayout";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var firstName = currentUser != null && !string.IsNullOrWhiteSpace(currentUser.FullName)
+        ? currentUser.FullName.Split(' ')[0]
+        : "there";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+    <div>
+        <p class="eyebrow mb-1">Counter</p>
+        <h1 class="page-title">Good @(DateTime.Now.Hour < 12 ? "morning" : DateTime.Now.Hour < 17 ? "afternoon" : "evening"), @firstName</h1>
+    </div>
+    <div class="page-date">@DateTime.Now.ToString("dddd, d MMMM yyyy")</div>
+</div>
+
+<!-- KPI cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <span class="kpi-label">Sales today</span>
+            <span class="kpi-value">@Model.SalesToday</span>
+            <span class="kpi-sub">transactions recorded</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <span class="kpi-label">Revenue today</span>
+            <span class="kpi-value">@Model.RevenueToday.ToString("N0")</span>
+            <span class="kpi-sub">across all counters</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <span class="kpi-label">Products on file</span>
+            <span class="kpi-value">@Model.Products.Count</span>
+            <span class="kpi-sub">available to look up</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-card-alert @(Model.LowStockCount + Model.OutOfStockCount > 0 ? "has-alerts" : "")">
+            <span class="kpi-label">Stock warnings</span>
+            <span class="kpi-value">@(Model.LowStockCount + Model.OutOfStockCount)</span>
+            <span class="kpi-sub">@Model.LowStockCount low · @Model.OutOfStockCount out</span>
+        </div>
+    </div>
+</div>
+
+<!-- Product lookup -->
+<div class="panel mb-4" id="product-lookup">
+    <div class="panel-head">
+        <h2 class="panel-title">Product lookup</h2>
+        <input type="search" id="productSearch" class="form-control panel-search"
+               placeholder="Search by name, SKU or category…" aria-label="Search products" />
+    </div>
+    <div class="table-scroll table-scroll-tall">
+        <table class="ledger-table" id="productTable">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-end">In stock</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in Model.Products)
+                {
+                    <tr data-search="@((product.Name + " " + product.Sku + " " + product.CategoryName).ToLowerInvariant())">
+                        <td>
+                            <span class="cell-strong">@product.Name</span>
+                            <span class="cell-sub">@product.Sku</span>
+                        </td>
+                        <td>@product.CategoryName</td>
+                        <td class="text-end num">@product.SellingPrice.ToString("N2")</td>
+                        <td class="text-end num">@product.StockQuantity</td>
+                        <td>
+                            @if (product.IsOutOfStock)
+                            {
+                                <span class="badge-stamp badge-out">Out</span>
+                            }
+                            else if (product.IsLowStock)
+                            {
+                                <span class="badge-stamp badge-low">Low</span>
+                            }
+                            else
+                            {
+                                <span class="badge-stamp badge-ok">In stock</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="panel-body empty-state d-none" id="productEmpty">
+        <p class="mb-0">No product matches that search. Try part of the name or the SKU.</p>
+    </div>
+</div>
+
+<!-- Recent sales -->
+<div class="panel" id="recent-sales">
+    <div class="panel-head">
+        <h2 class="panel-title">Recent sales</h2>
+        <span class="panel-note">latest 8</span>
+    </div>
+    @if (!Model.RecentSales.Any())
+    {
+        <div class="panel-body empty-state">
+            <p class="mb-0">No sales recorded yet today. The first one will show up here.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-scroll">
+            <table class="ledger-table">
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>When</th>
+                        <th>By</th>
+                        <th>Payment</th>
+                        <th class="text-end">Items</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sale in Model.RecentSales)
+                    {
+                        <tr>
+                            <td><span class="cell-strong num">@sale.InvoiceNumber</span></td>
+                            <td>@sale.SoldAt.ToString("d MMM, HH:mm")</td>
+                            <td>@(sale.CashierName ?? "—")</td>
+                            <td>@sale.PaymentMethod</td>
+                            <td class="text-end num">@sale.ItemCount</td>
+                            <td class="text-end num">@sale.TotalAmount.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const input = document.getElementById("productSearch");
+            const table = document.getElementById("productTable");
+            const empty = document.getElementById("productEmpty");
+            if (!input || !table) return;
+
+            const rows = Array.from(table.tBodies[0].rows);
+
+            input.addEventListener("input", function () {
+                const query = input.value.trim().toLowerCase();
+                let visible = 0;
+
+                rows.forEach(function (row) {
+                    const match = !query || row.dataset.search.indexOf(query) !== -1;
+                    row.classList.toggle("d-none", !match);
+                    if (match) visible++;
+                });
+
+                table.parentElement.classList.toggle("d-none", visible === 0);
+                empty.classList.toggle("d-none", visible !== 0);
+            });
+        })();
+    </script>
+}

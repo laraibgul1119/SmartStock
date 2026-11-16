@@ -1,0 +1,27 @@
+@model SmartStock.ViewModels.AccessDeniedViewModel
+@{
+    ViewData["Title"] = "Access denied";
+}
+
+<div class="auth-wrap">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6 col-xl-5">
+                <div class="auth-card text-center">
+                    <div class="auth-head">
+                        <span class="brand-mark" aria-hidden="true">!</span>
+                        <p class="eyebrow mb-1">403</p>
+                        <h1 class="auth-title">This page isn't for your role</h1>
+                        <p class="text-muted small mb-0">
+                            You are signed in, but your account does not have permission to open this page.
+                        </p>
+                    </div>
+                    <div class="d-flex flex-column gap-2 px-4 px-sm-5 pb-4">
+                        <a class="btn btn-ink py-2" asp-controller="Account" asp-action="DashboardRedirect">Go to my dashboard</a>
+                        <a class="btn btn-outline-ink py-2" asp-controller="Home" asp-action="Index">Back to home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

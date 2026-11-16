@@ -1,0 +1,224 @@
+﻿@model SmartStock.ViewModels.HomeViewModel
+@using Microsoft.AspNetCore.Identity
+@using SmartStock.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@{
+    ViewData["Title"] = "Home";
+}
+
+<!-- Hero -->
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <p class="eyebrow">Inventory &amp; sales management</p>
+                <h1 class="hero-title">Run your shop's stock<br />like a well-kept ledger.</h1>
+                <p class="hero-lede">
+                    SmartStock tracks every product, updates stock the moment you buy or sell,
+                    and tells you what is running low — so your register and your shelf always agree.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <a class="btn btn-ink px-4 py-2" asp-controller="Account" asp-action="DashboardRedirect">Go to dashboard</a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-ink px-4 py-2" asp-controller="Account" asp-action="Register">Create your shop account</a>
+                        <a class="btn btn-outline-ink px-4 py-2" asp-controller="Account" asp-action="Login">Log in</a>
+                    }
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <!-- Live counter strip: numbers read straight from the database -->
+                <div class="counter-strip" aria-label="Live shop statistics">
+                    <div class="counter-head d-flex justify-content-between align-items-center">
+                        <span class="counter-title">Today at the counter</span>
+                        <span class="counter-live"><span class="live-dot" aria-hidden="true"></span> live</span>
+                    </div>
+                    <div class="counter-row">
+                        <span class="counter-label">Sales recorded</span>
+                        <span class="counter-dots" aria-hidden="true"></span>
+                        <span class="counter-value">@Model.SalesToday</span>
+                    </div>
+                    <div class="counter-row">
+                        <span class="counter-label">Revenue</span>
+                        <span class="counter-dots" aria-hidden="true"></span>
+                        <span class="counter-value">@Model.RevenueToday.ToString("N0")</span>
+                    </div>
+                    <div class="counter-row">
+                        <span class="counter-label">Products on file</span>
+                        <span class="counter-dots" aria-hidden="true"></span>
+                        <span class="counter-value">@Model.TotalProducts</span>
+                    </div>
+                    <div class="counter-row">
+                        <span class="counter-label">Units in stock</span>
+                        <span class="counter-dots" aria-hidden="true"></span>
+                        <span class="counter-value">@Model.TotalUnitsInStock.ToString("N0")</span>
+                    </div>
+                    <div class="counter-row counter-row-alert">
+                        <span class="counter-label">Running low</span>
+                        <span class="counter-dots" aria-hidden="true"></span>
+                        <span class="counter-value">@Model.LowStockCount</span>
+                    </div>
+                    <div class="counter-foot">
+                        Last 7 days: <strong>@Model.SalesWeek</strong> sales ·
+                        <strong>@Model.RevenueWeek.ToString("N0")</strong> revenue
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Live stat band -->
+<section class="stat-band">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-6 col-lg-3">
+                <div class="stat-number">@Model.TotalProducts</div>
+                <div class="stat-caption">Products tracked</div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-number">@Model.CategoryCount</div>
+                <div class="stat-caption">Categories</div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-number">@Model.SupplierCount</div>
+                <div class="stat-caption">Suppliers</div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-number">@(Model.LowStockCount + Model.OutOfStockCount)</div>
+                <div class="stat-caption">Items need attention</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="section" id="features">
+    <div class="container">
+        <p class="eyebrow">What it does</p>
+        <h2 class="section-title">Everything a small shop needs, nothing it doesn't.</h2>
+        <div class="row g-4 mt-1">
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-mark" aria-hidden="true">↓</div>
+                    <h3>Stock updates itself</h3>
+                    <p>Record a purchase and stock goes up; ring up a sale and it goes down. No second register to reconcile.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-mark" aria-hidden="true">!</div>
+                    <h3>Low-stock alerts</h3>
+                    <p>Every product carries a reorder level. Anything at or below it is flagged before it disappears from the shelf.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-mark" aria-hidden="true">≡</div>
+                    <h3>Sales history</h3>
+                    <p>Every transaction is kept with its invoice number, cashier and line items — searchable, not scribbled.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-mark" aria-hidden="true">✓</div>
+                    <h3>Two clear roles</h3>
+                    <p>The owner manages products, suppliers and reports. The cashier records sales and checks stock. Each sees only what they need.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-mark" aria-hidden="true">◔</div>
+                    <h3>Daily dashboard</h3>
+                    <p>Revenue for today, this month and the last two weeks — drawn as you open the page, straight from your records.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-mark" aria-hidden="true">▤</div>
+                    <h3>Supplier &amp; category records</h3>
+                    <p>Keep who you buy from and how items are grouped in one place, so reports actually make sense.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How it works -->
+<section class="section section-tint" id="how-it-works">
+    <div class="container">
+        <p class="eyebrow">The daily flow</p>
+        <h2 class="section-title">Six steps, morning to close.</h2>
+        <ol class="flow-list mt-4">
+            <li>
+                <span class="flow-num">01</span>
+                <div>
+                    <h4>Log in</h4>
+                    <p>Open the system with your registered account. Your role decides what you see.</p>
+                </div>
+            </li>
+            <li>
+                <span class="flow-num">02</span>
+                <div>
+                    <h4>Set up the catalogue</h4>
+                    <p>The owner adds categories, products and supplier details once.</p>
+                </div>
+            </li>
+            <li>
+                <span class="flow-num">03</span>
+                <div>
+                    <h4>Record purchases</h4>
+                    <p>New stock arrives from a supplier — record it and available quantities rise automatically.</p>
+                </div>
+            </li>
+            <li>
+                <span class="flow-num">04</span>
+                <div>
+                    <h4>Record sales</h4>
+                    <p>The cashier rings up the customer, the receipt prints, and stock falls by exactly what was sold.</p>
+                </div>
+            </li>
+            <li>
+                <span class="flow-num">05</span>
+                <div>
+                    <h4>Watch the shelf</h4>
+                    <p>Low-stock and out-of-stock items are listed on the dashboard as soon as they cross their reorder level.</p>
+                </div>
+            </li>
+            <li>
+                <span class="flow-num">06</span>
+                <div>
+                    <h4>Read the numbers</h4>
+                    <p>Sales history, purchase records, stock value and performance charts are all one click away.</p>
+                </div>
+            </li>
+        </ol>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+    <div class="container">
+        <div class="cta-panel">
+            <div>
+                <h2 class="cta-title">Put the paper register down.</h2>
+                <p class="cta-lede mb-0">Create an account and have your shop's stock on file in minutes.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-3">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <a class="btn btn-cream px-4 py-2" asp-controller="Account" asp-action="DashboardRedirect">Go to dashboard</a>
+                }
+                else
+                {
+                    <a class="btn btn-cream px-4 py-2" asp-controller="Account" asp-action="Register">Create account</a>
+                    <a class="btn btn-outline-cream px-4 py-2" asp-controller="Account" asp-action="Login">Log in</a>
+                }
+            </div>
+        </div>
+    </div>
+</section>

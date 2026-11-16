@@ -1,0 +1,124 @@
+@using Microsoft.AspNetCore.Identity
+@using SmartStock.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@{
+    Layout = null;
+    var currentUser = await UserManager.GetUserAsync(User);
+    var displayName = string.IsNullOrWhiteSpace(currentUser?.FullName)
+        ? (currentUser?.UserName ?? "Account")
+        : currentUser.FullName;
+    var isAdmin = currentUser != null && await UserManager.IsInRoleAsync(currentUser, RoleNames.Admin);
+    var roleLabel = isAdmin ? "Shop owner" : "Cashier";
+    var roleName = isAdmin ? RoleNames.Admin : RoleNames.Cashier;
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SmartStock</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SmartStock.styles.css" asp-append-version="true" />
+</head>
+<body class="dash-body">
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <aside class="dash-sidebar d-none d-lg-flex flex-column">
+            <a class="dash-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark" aria-hidden="true">S</span>
+                <span class="brand-word">Smart<span>Stock</span></span>
+            </a>
+
+            <nav class="flex-grow-1 px-3 py-3">
+                <div class="sidebar-label">@roleLabel</div>
+
+                @if (isAdmin)
+                {
+                    <a class="side-link @(currentController == "Admin" ? "active" : "")"
+                       asp-controller="Admin" asp-action="Index">
+                        <span class="side-icon" aria-hidden="true">▦</span> Overview
+                    </a>
+                    <a class="side-link" href="#stock-alerts">
+                        <span class="side-icon" aria-hidden="true">⚠</span> Stock alerts
+                    </a>
+                    <a class="side-link" href="#recent-sales">
+                        <span class="side-icon" aria-hidden="true">≡</span> Recent sales
+                    </a>
+                    <a class="side-link" href="#top-products">
+                        <span class="side-icon" aria-hidden="true">★</span> Top products
+                    </a>
+                }
+                else
+                {
+                    <a class="side-link @(currentController == "Cashier" ? "active" : "")"
+                       asp-controller="Cashier" asp-action="Index">
+                        <span class="side-icon" aria-hidden="true">▦</span> Overview
+                    </a>
+                    <a class="side-link" href="#product-lookup">
+                        <span class="side-icon" aria-hidden="true">⌕</span> Product lookup
+                    </a>
+                    <a class="side-link" href="#recent-sales">
+                        <span class="side-icon" aria-hidden="true">≡</span> Recent sales
+                    </a>
+                }
+            </nav>
+
+            <div class="px-4 py-3 border-top border-light border-10">
+                <div class="side-user-name">@displayName</div>
+                <div class="side-user-role">@roleLabel</div>
+                <form asp-controller="Account" asp-action="Logout" method="post" class="mt-2">
+                    <button type="submit" class="side-logout">Log out</button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Main column -->
+        <div class="flex-grow-1 dash-main">
+            <header class="dash-topbar d-lg-none border-bottom">
+                <div class="d-flex align-items-center justify-content-between px-3 py-2">
+                    <a class="d-flex align-items-center gap-2 text-decoration-none" asp-controller="Home" asp-action="Index">
+                        <span class="brand-mark" aria-hidden="true">S</span>
+                        <span class="brand-word">Smart<span>Stock</span></span>
+                    </a>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="side-user-role">@roleLabel</span>
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            <button type="submit" class="side-logout">Log out</button>
+                        </form>
+                    </div>
+                </div>
+                <nav class="d-flex gap-1 px-2 pb-2 overflow-auto">
+                    @if (isAdmin)
+                    {
+                        <a class="side-chip active" asp-controller="Admin" asp-action="Index">Overview</a>
+                        <a class="side-chip" href="#stock-alerts">Stock alerts</a>
+                        <a class="side-chip" href="#recent-sales">Recent sales</a>
+                        <a class="side-chip" href="#top-products">Top products</a>
+                    }
+                    else
+                    {
+                        <a class="side-chip active" asp-controller="Cashier" asp-action="Index">Overview</a>
+                        <a class="side-chip" href="#product-lookup">Product lookup</a>
+                        <a class="side-chip" href="#recent-sales">Recent sales</a>
+                    }
+                </nav>
+            </header>
+
+            <main class="dash-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
