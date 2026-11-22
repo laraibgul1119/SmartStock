@@ -152,7 +152,7 @@
                                 <th class="text-end">Items</th>
                                 <th class="text-end">Total</th>
                             </tr>
-                        </thead>
+                       </thead>
                         <tbody>
                             @foreach (var sale in Model.RecentSales)
                             {
@@ -213,18 +213,39 @@
     </div>
 </div>
 
+<div class="row g-3 mt-1">
+    <div class="col-12">
+        <div class="panel">
+            <div class="panel-head">
+                <h2 class="panel-title">Live low-stock products</h2>
+                <span class="panel-note">loaded with AJAX</span>
+            </div>
+
+            <div class="panel-body">
+                <div data-low-stock-list
+                     data-low-stock-endpoint="@Url.Action("LowStock", "Inventory")">
+                    <p class="text-muted">Loading stock information...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+
+    <script src="~/js/low-stock.js" asp-append-version="true"></script>
     <script src="~/lib/chart.js/chart.umd.min.js"></script>
     <script>
         (function () {
             const revenuePoints = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                Model.RevenueLast14Days.Select(p => new {
-                    label = p.Date.ToString("dd MMM"),
-                    revenue = p.Revenue,
-                    count = p.Count
-                })));
+                                            Model.RevenueLast14Days.Select(p => new
+                                            {
+                                                    label = p.Date.ToString("dd MMM"),
+                                                    revenue = p.Revenue,
+                                                    count = p.Count
+                                            })));
             const categoryPoints = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                Model.StockByCategory.Select(c => new { name = c.Name, units = c.Units })));
+                                            Model.StockByCategory.Select(c => new { name = c.Name, units = c.Units })));
 
             const ink = "#1c1917";
             const green = "#1f6b4f";
